@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOCCL - Player Card</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Carte Rectangulaire avec 4 Bords Arrondis (Format Gold) */
+    .gold-card-frame {
+      border-radius: 26px;
+      background: linear-gradient(135deg, #FFE57F 0%, #F59E0B 35%, #D97706 70%, #78350F 100%);
+      border: 2px solid #FBBF24;
+      box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.5), 0 12px 30px rgba(0,0,0,0.8);
+    }
+
+    .gold-inner {
+      border-radius: 22px;
+      background: 
+        radial-gradient(circle at 50% 25%, rgba(255, 245, 205, 0.95) 0%, rgba(245, 158, 11, 0.75) 55%, rgba(120, 53, 15, 0.95) 100%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(0, 0, 0, 0.2) 100%);
+    }
+
+    .card-text-shadow {
+      text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.7);
+    }
+  </style>
+</head>
+<body class="bg-[#070A10] text-white font-sans min-h-screen pb-12">
+
+  <!-- Header -->
+  <header class="p-4 border-b border-gray-800 flex justify-between items-center bg-[#0D131F]/90 backdrop-blur-md sticky top-0 z-50">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center font-black text-amber-400 text-xs">FC</div>
+      <h1 class="font-black text-sm tracking-wider bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-500 bg-clip-text text-transparent">
+        MY FOOTY STATS
+      </h1>
+    </div>
+    <span class="px-2.5 py-1 bg-amber-500/10 text-amber-400 text-[10px] font-bold rounded-full border border-amber-500/30 uppercase tracking-widest">
+      SOCCL EDITION
+    </span>
+  </header>
+
+  <main class="max-w-md mx-auto p-4 space-y-5">
+
+    <!-- CARTE RECTANGULAIRE GOLD ÉPURÉE -->
+    <div class="relative w-[300px] h-[450px] mx-auto gold-card-frame p-1.5 transition-transform hover:scale-105 duration-300">
+      <div class="w-full h-full gold-inner relative overflow-hidden flex flex-col justify-between p-4 border border-amber-300/30">
+        
+        <div class="absolute inset-0 opacity-15 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:12px_12px] pointer-events-none"></div>
+
+        <!-- Haut de carte sans logo -->
+        <div class="relative z-10 flex justify-between items-start pt-2">
+          <div class="flex flex-col items-center leading-none pl-2 pt-2">
+            <span id="card-ovr" class="text-5xl font-black tracking-tighter text-[#1A0C00] card-text-shadow">78</span>
+            <span id="card-pos" class="text-base font-black uppercase tracking-wider text-[#3D2100] mt-1">BU</span>
+          </div>
+
+          <!-- Photo du Joueur -->
+          <div class="relative w-44 h-48 -mr-1 flex items-end justify-center overflow-hidden">
+            <img id="player-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233D2100'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>" 
+                 alt="Photo Joueur" 
+                 class="w-full h-full object-cover object-top filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.6)]">
+          </div>
+        </div>
+
+        <!-- Prénom & Catégorie -->
+        <div class="relative z-10 text-center -mt-4 border-b border-[#78350F]/30 pb-1">
+          <h2 id="card-name" class="text-2xl font-black uppercase tracking-wider text-[#1A0C00] leading-none card-text-shadow">
+            MATHIEU
+          </h2>
+          <span id="card-cat" class="text-[9px] text-[#522D00] font-black tracking-widest uppercase">SOCCL • U17</span>
+        </div>
+
+        <!-- 6 Stats FC -->
+        <div class="relative z-10 grid grid-cols-6 gap-0.5 text-center pb-2 pt-1 px-1 font-black text-[#1A0C00]">
+          <div>
+            <span class="block text-[8px] text-[#522D00] font-extrabold">PAC</span>
+            <span id="stat-pac" class="text-xs">75</span>
+          </div>
+          <div>
+            <span class="block text-[8px] text-[#522D00] font-extrabold">SHO</span>
+            <span id="stat-sho" class="text-xs">70</span>
+          </div>
+          <div>
+            <span class="block text-[8px] text-[#522D00] font-extrabold">PAS</span>
+            <span id="stat-pas" class="text-xs">68</span>
+          </div>
+          <div>
+            <span class="block text-[8px] text-[#522D00] font-extrabold">DRI</span>
+            <span id="stat-dri" class="text-xs">72</span>
+          </div>
+          <div>
+            <span class="block text-[8px] text-[#522D00] font-extrabold">DEF</span>
+            <span id="stat-def" class="text-xs">42</span>
+          </div>
+          <div>
+            <span class="block text-[8px] text-[#522D00] font-extrabold">PHY</span>
+            <span id="stat-phy" class="text-xs">70</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PANNEAU D'ÉDITION DU PROFIL -->
+    <section class="bg-[#0D131F] p-4 rounded-2xl border border-gray-800 space-y-3">
+      <h3 class="text-xs font-black text-amber-400 uppercase tracking-wider">👤 Mon Profil Joueur</h3>
+      
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label class="block text-[9px] text-gray-400 mb-1 font-bold">Prénom</label>
+          <input type="text" id="edit-name" value="MATHIEU" oninput="enregistrerProfil()" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2 text-xs text-white font-bold uppercase focus:outline-none focus:border-amber-400">
+        </div>
+        <div>
+          <label class="block text-[9px] text-gray-400 mb-1 font-bold">Poste</label>
+          <input type="text" id="edit-pos" value="BU" oninput="enregistrerProfil()" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2 text-xs text-center text-white font-bold uppercase focus:outline-none focus:border-amber-400">
+        </div>
+        <div>
+          <label class="block text-[9px] text-gray-400 mb-1 font-bold">Catégorie</label>
+          <input type="text" id="edit-cat" value="U17" oninput="enregistrerProfil()" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2 text-xs text-center text-white font-bold uppercase focus:outline-none focus:border-amber-400">
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center pt-1">
+        <label class="text-[10px] text-amber-300 font-bold cursor-pointer underline">
+          📸 Importer ma photo de joueur
+          <input type="file" accept="image/*" onchange="changerPhotoJoueur(event)" class="hidden">
+        </label>
+      </div>
+    </section>
+
+    <!-- CUMUL SAISON -->
+    <div class="grid grid-cols-3 gap-2 bg-[#0D131F] p-3 rounded-2xl border border-gray-800 text-center">
+      <div class="bg-gray-900/80 p-2 rounded-xl border border-gray-800">
+        <span class="block text-[10px] text-gray-400 font-bold uppercase">Matchs</span>
+        <span id="total-matchs" class="text-lg font-black text-amber-400">0</span>
+      </div>
+      <div class="bg-gray-900/80 p-2 rounded-xl border border-gray-800">
+        <span class="block text-[10px] text-gray-400 font-bold uppercase">Buts</span>
+        <span id="total-buts" class="text-lg font-black text-emerald-400">0</span>
+      </div>
+      <div class="bg-gray-900/80 p-2 rounded-xl border border-gray-800">
+        <span class="block text-[10px] text-gray-400 font-bold uppercase">Passes D</span>
+        <span id="total-passes" class="text-lg font-black text-cyan-400">0</span>
+      </div>
+    </div>
+
+    <!-- SAISIE MATCH -->
+    <section class="bg-[#0D131F] p-4 rounded-2xl border border-gray-800 space-y-3">
+      <h3 class="text-xs font-black text-amber-400 uppercase tracking-wider">⚽ Enregistrer un Match</h3>
+      
+      <div class="grid grid-cols-2 gap-2">
+        <input type="date" id="input-date" class="bg-gray-900 border border-gray-700 rounded-xl p-2 text-xs text-white focus:outline-none focus:border-amber-400">
+        <input type="text" id="input-adversaire" placeholder="Adversaire" class="bg-gray-900 border border-gray-700 rounded-xl p-2 text-xs text-white focus:outline-none focus:border-amber-400">
+      </div>
+
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label class="block text-[9px] text-gray-400 mb-1 font-bold">Temps (min)</label>
+          <input type="number" id="input-min" value="80" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2 text-xs text-center text-white font-bold">
+        </div>
+        <div>
+          <label class="block text-[9px] text-gray-400 mb-1 font-bold">Buts ⚽</label>
+          <input type="number" id="input-buts" value="0" min="0" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2 text-xs text-center text-emerald-400 font-black">
+        </div>
+        <div>
+          <label class="block text-[9px] text-gray-400 mb-1 font-bold">Passes D 🎯</label>
+          <input type="number" id="input-passes" value="0" min="0" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2 text-xs text-center text-cyan-400 font-black">
+        </div>
+      </div>
+
+      <button onclick="ajouterMatch()" class="w-full py-3 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all">
+        VALIDER ET METTRE À JOUR LA CARTE
+      </button>
+    </section>
+
+    <!-- HISTORIQUE -->
+    <section class="space-y-2">
+      <h3 class="text-xs font-black text-gray-400 uppercase tracking-wider">Historique des Rencontres</h3>
+      <div id="liste-matchs" class="space-y-2"></div>
+    </section>
+
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'soccl_gold_player_data_v5';
+    const PROFIL_KEY = 'soccl_gold_profil_v5';
+
+    let mesMatchs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    let profil = JSON.parse(localStorage.getItem(PROFIL_KEY)) || { name: 'MATHIEU', pos: 'BU', cat: 'U17', photo: '' };
+
+    document.getElementById('input-date').valueAsDate = new Date();
+
+    function chargerProfilInitial() {
+      document.getElementById('edit-name').value = profil.name;
+      document.getElementById('edit-pos').value = profil.pos;
+      document.getElementById('edit-cat').value = profil.cat;
+      
+      document.getElementById('card-name').innerText = profil.name;
+      document.getElementById('card-pos').innerText = profil.pos;
+      document.getElementById('card-cat').innerText = `SOCCL • ${profil.cat}`;
+
+      if (profil.photo) {
+        document.getElementById('player-img').src = profil.photo;
+      }
+    }
+
+    function enregistrerProfil() {
+      profil.name = document.getElementById('edit-name').value.toUpperCase() || 'JOUEUR';
+      profil.pos = document.getElementById('edit-pos').value.toUpperCase() || 'BU';
+      profil.cat = document.getElementById('edit-cat').value.toUpperCase() || 'U17';
+
+      document.getElementById('card-name').innerText = profil.name;
+      document.getElementById('card-pos').innerText = profil.pos;
+      document.getElementById('card-cat').innerText = `SOCCL • ${profil.cat}`;
+
+      localStorage.setItem(PROFIL_KEY, JSON.stringify(profil));
+    }
+
+    function changerPhotoJoueur(e) {
+      const reader = new FileReader();
+      reader.onload = function() {
+        document.getElementById('player-img').src = reader.result;
+        profil.photo = reader.result;
+        localStorage.setItem(PROFIL_KEY, JSON.stringify(profil));
+      }
+      reader.readAsDataURL(e.target.files[0]);
+    }
+
+    function ajouterMatch() {
+      const adv = document.getElementById('input-adversaire').value || 'Match amical';
+      const min = parseInt(document.getElementById('input-min').value) || 0;
+      const buts = parseInt(document.getElementById('input-buts').value) || 0;
+      const passes = parseInt(document.getElementById('input-passes').value) || 0;
+      const date = document.getElementById('input-date').value;
+
+      const match = { id: Date.now(), date, adversaire: adv, minutes: min, buts, passes };
+
+      mesMatchs.unshift(match);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(mesMatchs));
+
+      document.getElementById('input-adversaire').value = '';
+      document.getElementById('input-buts').value = '0';
+      document.getElementById('input-passes').value = '0';
+
+      actualiserInterface();
+    }
+
+    function supprimerMatch(id) {
+      mesMatchs = mesMatchs.filter(m => m.id !== id);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(mesMatchs));
+      actualiserInterface();
+    }
+
+    function actualiserInterface() {
+      const totalMatchs = mesMatchs.length;
+      const totalButs = mesMatchs.reduce((acc, m) => acc + m.buts, 0);
+      const totalPasses = mesMatchs.reduce((acc, m) => acc + m.passes, 0);
+
+      document.getElementById('total-matchs').innerText = totalMatchs;
+      document.getElementById('total-buts').innerText = totalButs;
+      document.getElementById('total-passes').innerText = totalPasses;
+
+      const pac = Math.min(99, 75 + totalMatchs);
+      const sho = Math.min(99, 70 + (totalButs * 2));
+      const pas = Math.min(99, 68 + (totalPasses * 3));
+      const dri = Math.min(99, 72 + totalButs + totalPasses);
+      const def = 42;
+      const phy = Math.min(99, 70 + Math.floor(totalMatchs / 2));
+
+      document.getElementById('stat-pac').innerText = pac;
+      document.getElementById('stat-sho').innerText = sho;
+      document.getElementById('stat-pas').innerText = pas;
+      document.getElementById('stat-dri').innerText = dri;
+      document.getElementById('stat-def').innerText = def;
+      document.getElementById('stat-phy').innerText = phy;
+
+      const ovr = Math.round((pac + sho + pas + dri + def + phy) / 6) + 12;
+      document.getElementById('card-ovr').innerText = Math.min(ovr, 99);
+
+      const container = document.getElementById('liste-matchs');
+      if (totalMatchs === 0) {
+        container.innerHTML = `<p class="text-xs text-gray-500 text-center py-4 font-medium">Aucun match enregistré.</p>`;
+        return;
+      }
+
+      container.innerHTML = mesMatchs.map(m => `
+        <div class="bg-[#0D131F] p-3 rounded-xl border border-gray-800 flex justify-between items-center text-xs">
+          <div>
+            <span class="font-bold text-white">vs ${m.adversaire}</span>
+            <span class="block text-[10px] text-gray-500">${m.date} • ${m.minutes} min</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="font-black text-emerald-400">⚽ ${m.buts}</span>
+            <span class="font-black text-cyan-400">🎯 ${m.passes}</span>
+            <button onclick="supprimerMatch(${m.id})" class="text-gray-600 hover:text-red-400 font-bold ml-1">✕</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    chargerProfilInitial();
+    actualiserInterface();
+  </script>
+</body>
+</html>
