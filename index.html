@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SOCCL - Player Card</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
-    /* Carte Rectangulaire avec 4 Bords Arrondis (Format Gold) */
     .gold-card-frame {
       border-radius: 26px;
       background: linear-gradient(135deg, #FFE57F 0%, #F59E0B 35%, #D97706 70%, #78350F 100%);
@@ -28,7 +28,6 @@
 </head>
 <body class="bg-[#070A10] text-white font-sans min-h-screen pb-12">
 
-  <!-- Header -->
   <header class="p-4 border-b border-gray-800 flex justify-between items-center bg-[#0D131F]/90 backdrop-blur-md sticky top-0 z-50">
     <div class="flex items-center gap-2">
       <div class="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center font-black text-amber-400 text-xs">FC</div>
@@ -43,13 +42,13 @@
 
   <main class="max-w-md mx-auto p-4 space-y-5">
 
-    <!-- CARTE RECTANGULAIRE GOLD ÉPURÉE -->
-    <div class="relative w-[300px] h-[450px] mx-auto gold-card-frame p-1.5 transition-transform hover:scale-105 duration-300">
+    <!-- CARTE RECTANGULAIRE GOLD -->
+    <div id="card-to-export" class="relative w-[300px] h-[450px] mx-auto gold-card-frame p-1.5 transition-transform hover:scale-105 duration-300">
       <div class="w-full h-full gold-inner relative overflow-hidden flex flex-col justify-between p-4 border border-amber-300/30">
         
         <div class="absolute inset-0 opacity-15 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:12px_12px] pointer-events-none"></div>
 
-        <!-- Haut de carte sans logo -->
+        <!-- Haut de carte -->
         <div class="relative z-10 flex justify-between items-start pt-2">
           <div class="flex flex-col items-center leading-none pl-2 pt-2">
             <span id="card-ovr" class="text-5xl font-black tracking-tighter text-[#1A0C00] card-text-shadow">78</span>
@@ -103,6 +102,40 @@
       </div>
     </div>
 
+    <!-- BOUTON D'EXPORT MA CARTE EN IMAGE -->
+    <button onclick="exporterCarte()" class="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-amber-400 font-bold border border-amber-500/30 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md">
+      📷 Exporter ma carte en image
+    </button>
+
+    <!-- MODULE ENTRAÎNEMENTS & XP -->
+    <section class="bg-[#0D131F] p-4 rounded-2xl border border-gray-800 space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="text-xs font-black text-amber-400 uppercase tracking-wider">⚡ ENTRAÎNEMENTS</h3>
+        <div class="flex items-center gap-1.5">
+          <span id="display-level" class="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 text-[10px] font-black rounded border border-emerald-500/30">Niv. 1</span>
+          <span id="display-xp" class="text-xs font-extrabold text-emerald-400">0 / 540 XP</span>
+        </div>
+      </div>
+
+      <div class="w-full bg-gray-900 h-3 rounded-full overflow-hidden border border-gray-800">
+        <div id="bar-forma" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full w-0 transition-all duration-500"></div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 items-center pt-1">
+        <input type="date" id="input-date-entrainement" class="bg-gray-900 border border-gray-700 rounded-xl p-2 text-xs text-white focus:outline-none focus:border-amber-400">
+        <div class="flex items-center gap-1">
+          <input type="number" id="input-duree-entrainement" value="90" min="1" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2 text-xs text-center text-white font-bold">
+          <span class="text-[9px] text-gray-400 font-bold">min</span>
+        </div>
+        <button onclick="ajouterEntrainement()" class="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-xl text-xs uppercase transition-all shadow-md">
+          VALIDER
+        </button>
+      </div>
+
+      <!-- HISTORIQUE CONDENSÉ (3 DERNIERS ENTRAÎNEMENTS) -->
+      <div id="liste-entrainements" class="space-y-1.5 pt-2 border-t border-gray-800/60"></div>
+    </section>
+
     <!-- PANNEAU D'ÉDITION DU PROFIL -->
     <section class="bg-[#0D131F] p-4 rounded-2xl border border-gray-800 space-y-3">
       <h3 class="text-xs font-black text-amber-400 uppercase tracking-wider">👤 Mon Profil Joueur</h3>
@@ -146,6 +179,59 @@
       </div>
     </div>
 
+    <!-- MODULE OBJECTIFS DE SAISON -->
+    <section class="bg-[#0D131F] p-4 rounded-2xl border border-gray-800 space-y-3">
+      <h3 class="text-xs font-black text-amber-400 uppercase tracking-wider">🎯 Objectifs de Saison</h3>
+      
+      <div class="grid grid-cols-3 gap-2 mb-2">
+        <div>
+          <label class="block text-[9px] text-gray-400 font-bold">Cible Buts</label>
+          <input type="number" id="target-buts" value="15" oninput="enregistrerObjectifs()" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-1.5 text-xs text-center text-white font-bold">
+        </div>
+        <div>
+          <label class="block text-[9px] text-gray-400 font-bold">Cible Passes</label>
+          <input type="number" id="target-passes" value="10" oninput="enregistrerObjectifs()" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-1.5 text-xs text-center text-white font-bold">
+        </div>
+        <div>
+          <label class="block text-[9px] text-gray-400 font-bold">Cible Min</label>
+          <input type="number" id="target-min" value="1000" oninput="enregistrerObjectifs()" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-1.5 text-xs text-center text-white font-bold">
+        </div>
+      </div>
+
+      <!-- Barres de progression -->
+      <div class="space-y-2 pt-1">
+        <div>
+          <div class="flex justify-between text-[10px] font-bold mb-1">
+            <span class="text-emerald-400">Buts ( Compétition )</span>
+            <span id="label-prog-buts">0 / 15</span>
+          </div>
+          <div class="w-full bg-gray-900 h-2 rounded-full overflow-hidden">
+            <div id="bar-prog-buts" class="bg-emerald-400 h-full w-0 transition-all duration-300"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between text-[10px] font-bold mb-1">
+            <span class="text-cyan-400">Passes Décisives</span>
+            <span id="label-prog-passes">0 / 10</span>
+          </div>
+          <div class="w-full bg-gray-900 h-2 rounded-full overflow-hidden">
+            <div id="bar-prog-passes" class="bg-cyan-400 h-full w-0 transition-all duration-300"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between text-[10px] font-bold mb-1">
+            <span class="text-amber-400">Temps de jeu (min)</span>
+            <span id="label-prog-min">0 / 1000 min</span>
+          </div>
+          <div class="w-full bg-gray-900 h-2 rounded-full overflow-hidden">
+            <div id="bar-prog-min" class="bg-amber-400 h-full w-0 transition-all duration-300"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- SAISIE MATCH -->
     <section class="bg-[#0D131F] p-4 rounded-2xl border border-gray-800 space-y-3">
       <h3 class="text-xs font-black text-amber-400 uppercase tracking-wider">⚽ Enregistrer un Match</h3>
@@ -181,16 +267,35 @@
       <div id="liste-matchs" class="space-y-2"></div>
     </section>
 
+    <!-- MODULE DE SAUVEGARDE & RESTAURATION DES DONNÉES -->
+    <section class="bg-[#0D131F] p-4 rounded-2xl border border-gray-800 space-y-3 text-center">
+      <h3 class="text-xs font-black text-gray-400 uppercase tracking-wider">⚙️ Gestion des Données</h3>
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="exporterDonnees()" class="py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold border border-gray-700 rounded-xl text-[10px] uppercase transition-all">
+          💾 Exporter mes données
+        </button>
+        <label class="py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold border border-gray-700 rounded-xl text-[10px] uppercase cursor-pointer block transition-all">
+          📥 Importer mes données
+          <input type="file" accept=".json" onchange="importerDonnees(event)" class="hidden">
+        </label>
+      </div>
+    </section>
+
   </main>
 
   <script>
-    const STORAGE_KEY = 'soccl_gold_player_data_v5';
-    const PROFIL_KEY = 'soccl_gold_profil_v5';
+    const STORAGE_KEY = 'soccl_gold_player_data_v10';
+    const PROFIL_KEY = 'soccl_gold_profil_v10';
+    const OBJECTIFS_KEY = 'soccl_gold_objectifs_v10';
+    const ENTRAINEMENT_KEY = 'soccl_gold_entrainement_v10';
 
     let mesMatchs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     let profil = JSON.parse(localStorage.getItem(PROFIL_KEY)) || { name: 'MATHIEU', pos: 'BU', cat: 'U17', photo: '' };
+    let objectifs = JSON.parse(localStorage.getItem(OBJECTIFS_KEY)) || { buts: 15, passes: 10, min: 1000 };
+    let entrainementData = JSON.parse(localStorage.getItem(ENTRAINEMENT_KEY)) || { xp: 0, minutesTotal: 0, liste: [] };
 
     document.getElementById('input-date').valueAsDate = new Date();
+    document.getElementById('input-date-entrainement').valueAsDate = new Date();
 
     function chargerProfilInitial() {
       document.getElementById('edit-name').value = profil.name;
@@ -204,6 +309,12 @@
       if (profil.photo) {
         document.getElementById('player-img').src = profil.photo;
       }
+
+      document.getElementById('target-buts').value = objectifs.buts;
+      document.getElementById('target-passes').value = objectifs.passes;
+      document.getElementById('target-min').value = objectifs.min;
+
+      actualiserJaugeForme();
     }
 
     function enregistrerProfil() {
@@ -218,6 +329,15 @@
       localStorage.setItem(PROFIL_KEY, JSON.stringify(profil));
     }
 
+    function enregistrerObjectifs() {
+      objectifs.buts = parseInt(document.getElementById('target-buts').value) || 1;
+      objectifs.passes = parseInt(document.getElementById('target-passes').value) || 1;
+      objectifs.min = parseInt(document.getElementById('target-min').value) || 1;
+
+      localStorage.setItem(OBJECTIFS_KEY, JSON.stringify(objectifs));
+      actualiserInterface();
+    }
+
     function changerPhotoJoueur(e) {
       const reader = new FileReader();
       reader.onload = function() {
@@ -226,6 +346,67 @@
         localStorage.setItem(PROFIL_KEY, JSON.stringify(profil));
       }
       reader.readAsDataURL(e.target.files[0]);
+    }
+
+    function ajouterEntrainement() {
+      const duree = parseInt(document.getElementById('input-duree-entrainement').value) || 0;
+      if (duree <= 0) return;
+
+      const date = document.getElementById('input-date-entrainement').value;
+      const pointsXP = Math.round(duree * 0.5);
+
+      entrainementData.xp += pointsXP;
+      entrainementData.minutesTotal += duree;
+      entrainementData.liste.unshift({ id: Date.now(), date, duree, xp: pointsXP });
+
+      localStorage.setItem(ENTRAINEMENT_KEY, JSON.stringify(entrainementData));
+      actualiserJaugeForme();
+      actualiserInterface();
+    }
+
+    function supprimerEntrainement(id) {
+      const e = entrainementData.liste.find(item => item.id === id);
+      if (e) {
+        entrainementData.xp = Math.max(0, entrainementData.xp - e.xp);
+        entrainementData.minutesTotal = Math.max(0, entrainementData.minutesTotal - e.duree);
+        entrainementData.liste = entrainementData.liste.filter(item => item.id !== id);
+        
+        localStorage.setItem(ENTRAINEMENT_KEY, JSON.stringify(entrainementData));
+        actualiserJaugeForme();
+        actualiserInterface();
+      }
+    }
+
+    function actualiserJaugeForme() {
+      const xpTotal = entrainementData.xp;
+      const maxXP = 540;
+      const level = Math.floor(xpTotal / maxXP) + 1;
+      const xpInCurrentLevel = xpTotal % maxXP;
+
+      document.getElementById('display-level').innerText = `Niv. ${level}`;
+      document.getElementById('display-xp').innerText = `${xpInCurrentLevel} / ${maxXP} XP`;
+      
+      const pourcentage = Math.min(100, Math.round((xpInCurrentLevel / maxXP) * 100));
+      document.getElementById('bar-forma').style.width = `${pourcentage}%`;
+
+      // Affichage restreint aux 3 derniers entraînements
+      const container = document.getElementById('liste-entrainements');
+      const troisDerniers = entrainementData.liste.slice(0, 3);
+
+      if (troisDerniers.length === 0) {
+        container.innerHTML = `<p class="text-[10px] text-gray-500 text-center py-1">Aucun entraînement enregistré.</p>`;
+        return;
+      }
+
+      container.innerHTML = troisDerniers.map(e => `
+        <div class="flex justify-between items-center bg-gray-900/60 p-2 rounded-lg text-[10px]">
+          <span class="text-gray-300 font-bold">Séance du ${e.date} (${e.duree} min)</span>
+          <div class="flex items-center gap-2">
+            <span class="text-emerald-400 font-extrabold">+${e.xp} XP</span>
+            <button onclick="supprimerEntrainement(${e.id})" class="text-gray-600 hover:text-red-400 font-bold px-1">✕</button>
+          </div>
+        </div>
+      `).join('');
     }
 
     function ajouterMatch() {
@@ -257,17 +438,19 @@
       const totalMatchs = mesMatchs.length;
       const totalButs = mesMatchs.reduce((acc, m) => acc + m.buts, 0);
       const totalPasses = mesMatchs.reduce((acc, m) => acc + m.passes, 0);
+      const totalMin = mesMatchs.reduce((acc, m) => acc + m.minutes, 0);
 
       document.getElementById('total-matchs').innerText = totalMatchs;
       document.getElementById('total-buts').innerText = totalButs;
       document.getElementById('total-passes').innerText = totalPasses;
 
+      const bonusXPPhy = Math.floor(entrainementData.xp / 100);
       const pac = Math.min(99, 75 + totalMatchs);
       const sho = Math.min(99, 70 + (totalButs * 2));
       const pas = Math.min(99, 68 + (totalPasses * 3));
       const dri = Math.min(99, 72 + totalButs + totalPasses);
       const def = 42;
-      const phy = Math.min(99, 70 + Math.floor(totalMatchs / 2));
+      const phy = Math.min(99, 70 + Math.floor(totalMatchs / 2) + bonusXPPhy);
 
       document.getElementById('stat-pac').innerText = pac;
       document.getElementById('stat-sho').innerText = sho;
@@ -278,6 +461,15 @@
 
       const ovr = Math.round((pac + sho + pas + dri + def + phy) / 6) + 12;
       document.getElementById('card-ovr').innerText = Math.min(ovr, 99);
+
+      document.getElementById('label-prog-buts').innerText = `${totalButs} / ${objectifs.buts}`;
+      document.getElementById('bar-prog-buts').style.width = `${Math.min(100, (totalButs / objectifs.buts) * 100)}%`;
+
+      document.getElementById('label-prog-passes').innerText = `${totalPasses} / ${objectifs.passes}`;
+      document.getElementById('bar-prog-passes').style.width = `${Math.min(100, (totalPasses / objectifs.passes) * 100)}%`;
+
+      document.getElementById('label-prog-min').innerText = `${totalMin} / ${objectifs.min} min`;
+      document.getElementById('bar-prog-min').style.width = `${Math.min(100, (totalMin / objectifs.min) * 100)}%`;
 
       const container = document.getElementById('liste-matchs');
       if (totalMatchs === 0) {
@@ -298,6 +490,50 @@
           </div>
         </div>
       `).join('');
+    }
+
+    function exporterCarte() {
+      const cardElement = document.getElementById('card-to-export');
+      html2canvas(cardElement, { scale: 3 }).then(canvas => {
+        const image = canvas.toDataURL("image/png");
+        const link = document.createElement('a');
+        link.href = image;
+        link.download = `carte-${profil.name}.png`;
+        link.click();
+      });
+    }
+
+    function exporterDonnees() {
+      const backup = {
+        profil,
+        matchs: mesMatchs,
+        objectifs,
+        entrainement: entrainementData
+      };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup));
+      const dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", `backup-${profil.name}.json`);
+      dlAnchor.click();
+    }
+
+    function importerDonnees(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        try {
+          const data = JSON.parse(event.target.result);
+          if (data.profil) localStorage.setItem(PROFIL_KEY, JSON.stringify(data.profil));
+          if (data.matchs) localStorage.setItem(STORAGE_KEY, JSON.stringify(data.matchs));
+          if (data.objectifs) localStorage.setItem(OBJECTIFS_KEY, JSON.stringify(data.objectifs));
+          if (data.entrainement) localStorage.setItem(ENTRAINEMENT_KEY, JSON.stringify(data.entrainement));
+          location.reload();
+        } catch (err) {
+          alert("Erreur lors de l'importation du fichier.");
+        }
+      };
+      reader.readAsText(file);
     }
 
     chargerProfilInitial();
