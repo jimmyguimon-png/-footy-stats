@@ -6,6 +6,8 @@
   <title>SOCCL - Player Card</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <style>
     .gold-card-frame {
       border-radius: 26px;
@@ -28,6 +30,25 @@
 </head>
 <body class="bg-[#070A10] text-white font-sans min-h-screen pb-12">
 
+  <!-- ECRAN D'ACCES : CODE JOUEUR -->
+  <div id="gate-code" class="fixed inset-0 z-[100] bg-[#070A10] flex flex-col items-center justify-center gap-4 p-6 text-center">
+    <div class="w-14 h-14 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center font-black text-amber-400 text-lg">FC</div>
+    <h1 class="font-black text-lg tracking-wider bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-500 bg-clip-text text-transparent">
+      MY FOOTY STATS
+    </h1>
+    <p class="text-xs text-gray-400 max-w-xs">
+      Entre un code joueur pour accéder à un profil (ou inventes-en un nouveau pour le créer). Partage ce code pour retrouver le même profil depuis un autre appareil.
+    </p>
+    <input type="text" id="input-code-joueur" placeholder="Ex: MATHIEU-U17" maxlength="40"
+           class="w-full max-w-xs bg-gray-900 border border-gray-700 rounded-xl p-3 text-sm text-center text-white font-black uppercase tracking-wider focus:outline-none focus:border-amber-400">
+    <button onclick="accederProfil()" class="w-full max-w-xs py-3 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all">
+      Accéder à mon profil
+    </button>
+    <p id="gate-erreur" class="text-[10px] text-red-400 max-w-xs hidden"></p>
+  </div>
+
+  <div id="app-content" class="hidden">
+
   <header class="p-4 border-b border-gray-800 flex justify-between items-center bg-[#0D131F]/90 backdrop-blur-md sticky top-0 z-50">
     <div class="flex items-center gap-2">
       <div class="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center font-black text-amber-400 text-xs">FC</div>
@@ -39,6 +60,11 @@
       SOCCL EDITION
     </span>
   </header>
+
+  <div class="max-w-md mx-auto px-4 pt-3 flex items-center justify-between text-[10px] text-gray-500">
+    <span>Code joueur : <strong id="display-code-joueur" class="text-amber-400"></strong></span>
+    <button onclick="changerDeJoueur()" class="underline hover:text-amber-400">Changer de joueur</button>
+  </div>
 
   <main class="max-w-md mx-auto p-4 space-y-5">
 
@@ -283,19 +309,93 @@
 
   </main>
 
-  <script>
-    const STORAGE_KEY = 'soccl_gold_player_data_v10';
-    const PROFIL_KEY = 'soccl_gold_profil_v10';
-    const OBJECTIFS_KEY = 'soccl_gold_objectifs_v10';
-    const ENTRAINEMENT_KEY = 'soccl_gold_entrainement_v10';
+  </div>
 
-    let mesMatchs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    let profil = JSON.parse(localStorage.getItem(PROFIL_KEY)) || { name: 'MATHIEU', pos: 'BU', cat: 'U17', photo: '' };
-    let objectifs = JSON.parse(localStorage.getItem(OBJECTIFS_KEY)) || { buts: 15, passes: 10, min: 1000 };
-    let entrainementData = JSON.parse(localStorage.getItem(ENTRAINEMENT_KEY)) || { xp: 0, minutesTotal: 0, liste: [] };
+  <script>
+    // ============================================================
+    // CONFIGURATION FIREBASE
+    // 1. Crée un projet gratuit sur https://console.firebase.google.com
+    // 2. Ajoute une "Web App" et colle sa config ci-dessous
+    // 3. Active Firestore Database, puis applique les règles décrites dans le README
+    // ============================================================
+    const firebaseConfig = {
+      apiKey: "REMPLACE_MOI",
+      authDomain: "REMPLACE_MOI.firebaseapp.com",
+      projectId: "REMPLACE_MOI",
+      storageBucket: "REMPLACE_MOI.appspot.com",
+      messagingSenderId: "REMPLACE_MOI",
+      appId: "REMPLACE_MOI"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+
+    const CODE_KEY = 'soccl_player_code_v1';
+    let codeJoueur = localStorage.getItem(CODE_KEY) || '';
+    let playerDocRef = null;
+    let arreterEcoute = null;
+
+    let mesMatchs = [];
+    let profil = { name: 'MATHIEU', pos: 'BU', cat: 'U17', photo: '' };
+    let objectifs = { buts: 15, passes: 10, min: 1000 };
+    let entrainementData = { xp: 0, minutesTotal: 0, liste: [] };
 
     document.getElementById('input-date').valueAsDate = new Date();
     document.getElementById('input-date-entrainement').valueAsDate = new Date();
+
+    function accederProfil() {
+      const saisie = document.getElementById('input-code-joueur').value.trim().toUpperCase().replace(/\s+/g, '-');
+      if (!saisie) return;
+      codeJoueur = saisie;
+      localStorage.setItem(CODE_KEY, codeJoueur);
+      demarrerSynchronisation();
+    }
+
+    function changerDeJoueur() {
+      if (arreterEcoute) arreterEcoute();
+      localStorage.removeItem(CODE_KEY);
+      location.reload();
+    }
+
+    function demarrerSynchronisation() {
+      const erreur = document.getElementById('gate-erreur');
+      erreur.classList.add('hidden');
+
+      playerDocRef = db.collection('joueurs').doc(codeJoueur);
+
+      arreterEcoute = playerDocRef.onSnapshot((docSnap) => {
+        if (docSnap.exists) {
+          const data = docSnap.data();
+          profil = data.profil || profil;
+          mesMatchs = data.matchs || [];
+          objectifs = data.objectifs || objectifs;
+          entrainementData = data.entrainement || entrainementData;
+        } else {
+          playerDocRef.set({ profil, matchs: mesMatchs, objectifs, entrainement: entrainementData });
+        }
+
+        document.getElementById('gate-code').classList.add('hidden');
+        document.getElementById('app-content').classList.remove('hidden');
+        document.getElementById('display-code-joueur').innerText = codeJoueur;
+
+        chargerProfilInitial();
+        actualiserInterface();
+      }, (err) => {
+        erreur.innerText = "Erreur de connexion : " + err.message + " (vérifie la configuration Firebase dans index.html)";
+        erreur.classList.remove('hidden');
+      });
+    }
+
+    function sauvegarder() {
+      if (!playerDocRef) return;
+      playerDocRef.set({ profil, matchs: mesMatchs, objectifs, entrainement: entrainementData });
+    }
+
+    if (codeJoueur) {
+      document.getElementById('input-code-joueur').value = codeJoueur;
+      demarrerSynchronisation();
+    }
 
     function chargerProfilInitial() {
       document.getElementById('edit-name').value = profil.name;
@@ -326,7 +426,7 @@
       document.getElementById('card-pos').innerText = profil.pos;
       document.getElementById('card-cat').innerText = `SOCCL • ${profil.cat}`;
 
-      localStorage.setItem(PROFIL_KEY, JSON.stringify(profil));
+      sauvegarder();
     }
 
     function enregistrerObjectifs() {
@@ -334,7 +434,7 @@
       objectifs.passes = parseInt(document.getElementById('target-passes').value) || 1;
       objectifs.min = parseInt(document.getElementById('target-min').value) || 1;
 
-      localStorage.setItem(OBJECTIFS_KEY, JSON.stringify(objectifs));
+      sauvegarder();
       actualiserInterface();
     }
 
@@ -343,7 +443,7 @@
       reader.onload = function() {
         document.getElementById('player-img').src = reader.result;
         profil.photo = reader.result;
-        localStorage.setItem(PROFIL_KEY, JSON.stringify(profil));
+        sauvegarder();
       }
       reader.readAsDataURL(e.target.files[0]);
     }
@@ -359,7 +459,7 @@
       entrainementData.minutesTotal += duree;
       entrainementData.liste.unshift({ id: Date.now(), date, duree, xp: pointsXP });
 
-      localStorage.setItem(ENTRAINEMENT_KEY, JSON.stringify(entrainementData));
+      sauvegarder();
       actualiserJaugeForme();
       actualiserInterface();
     }
@@ -370,8 +470,8 @@
         entrainementData.xp = Math.max(0, entrainementData.xp - e.xp);
         entrainementData.minutesTotal = Math.max(0, entrainementData.minutesTotal - e.duree);
         entrainementData.liste = entrainementData.liste.filter(item => item.id !== id);
-        
-        localStorage.setItem(ENTRAINEMENT_KEY, JSON.stringify(entrainementData));
+
+        sauvegarder();
         actualiserJaugeForme();
         actualiserInterface();
       }
@@ -419,7 +519,7 @@
       const match = { id: Date.now(), date, adversaire: adv, minutes: min, buts, passes };
 
       mesMatchs.unshift(match);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(mesMatchs));
+      sauvegarder();
 
       document.getElementById('input-adversaire').value = '';
       document.getElementById('input-buts').value = '0';
@@ -430,7 +530,7 @@
 
     function supprimerMatch(id) {
       mesMatchs = mesMatchs.filter(m => m.id !== id);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(mesMatchs));
+      sauvegarder();
       actualiserInterface();
     }
 
@@ -524,20 +624,17 @@
       reader.onload = function(event) {
         try {
           const data = JSON.parse(event.target.result);
-          if (data.profil) localStorage.setItem(PROFIL_KEY, JSON.stringify(data.profil));
-          if (data.matchs) localStorage.setItem(STORAGE_KEY, JSON.stringify(data.matchs));
-          if (data.objectifs) localStorage.setItem(OBJECTIFS_KEY, JSON.stringify(data.objectifs));
-          if (data.entrainement) localStorage.setItem(ENTRAINEMENT_KEY, JSON.stringify(data.entrainement));
-          location.reload();
+          if (data.profil) profil = data.profil;
+          if (data.matchs) mesMatchs = data.matchs;
+          if (data.objectifs) objectifs = data.objectifs;
+          if (data.entrainement) entrainementData = data.entrainement;
+          sauvegarder();
         } catch (err) {
           alert("Erreur lors de l'importation du fichier.");
         }
       };
       reader.readAsText(file);
     }
-
-    chargerProfilInitial();
-    actualiserInterface();
   </script>
 </body>
 </html>
