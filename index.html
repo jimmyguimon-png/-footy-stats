@@ -346,6 +346,7 @@
     let codeJoueur = localStorage.getItem(CODE_KEY) || '';
     let playerDocRef = null;
     let arreterEcoute = null;
+    let profilDejaVu = false;
 
     let mesMatchs = [];
     let profil = { name: 'MATHIEU', pos: 'BU', cat: 'U17', photo: '' };
@@ -372,16 +373,26 @@
     function demarrerSynchronisation() {
       const erreur = document.getElementById('gate-erreur');
       erreur.classList.add('hidden');
+      profilDejaVu = false;
 
       playerDocRef = db.collection('joueurs').doc(codeJoueur);
 
       arreterEcoute = playerDocRef.onSnapshot((docSnap) => {
         if (docSnap.exists) {
+          profilDejaVu = true;
           const data = docSnap.data();
           profil = data.profil || profil;
           mesMatchs = data.matchs || [];
           objectifs = data.objectifs || objectifs;
           entrainementData = data.entrainement || entrainementData;
+        } else if (profilDejaVu) {
+          // Le profil existait puis a disparu (supprimé depuis la console parent) :
+          // on ne le recrée surtout pas avec les données encore en mémoire ici.
+          if (arreterEcoute) arreterEcoute();
+          localStorage.removeItem(CODE_KEY);
+          alert(`Le profil "${codeJoueur}" a été supprimé. Retour à l'écran d'accueil.`);
+          location.reload();
+          return;
         } else {
           recupererAnciennesDonnees();
           playerDocRef.set({ profil, matchs: mesMatchs, objectifs, entrainement: entrainementData });
