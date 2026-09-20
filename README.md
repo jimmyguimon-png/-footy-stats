@@ -15,17 +15,13 @@ code peu évident si tu veux limiter les accès non désirés.
 
 ### Configuration (à faire une seule fois)
 
+✅ Le projet Firebase (`stat-foot-e0642`) est déjà créé et sa config est déjà
+renseignée dans `index.html`. Il reste deux étapes côté console Firebase :
+
 1. Va sur [console.firebase.google.com](https://console.firebase.google.com)
-   et crée un nouveau projet (gratuit).
-2. Dans le projet, ajoute une application **Web** (icône `</>`), donne-lui un
-   nom, puis copie l'objet de configuration fourni (`apiKey`, `authDomain`,
-   `projectId`, etc.).
-3. Ouvre `index.html` et remplace les valeurs `"REMPLACE_MOI"` dans la
-   constante `firebaseConfig` (au début de la balise `<script>`) par celles
-   de ton projet.
-4. Dans la console Firebase, va dans **Firestore Database** → **Créer une
-   base de données** (choisis un mode, par exemple "production").
-5. Dans l'onglet **Règles** de Firestore, colle les règles suivantes (accès
+   → projet `stat-foot-e0642` → **Firestore Database** → **Créer une base de
+   données** (choisis un mode, par exemple "production").
+2. Dans l'onglet **Règles** de Firestore, colle les règles suivantes (accès
    ouvert, cohérent avec le fonctionnement "code joueur sans mot de passe") :
 
    ```
@@ -39,7 +35,7 @@ code peu évident si tu veux limiter les accès non désirés.
    }
    ```
 
-6. Déploie/héberge `index.html` (ex: GitHub Pages) et ouvre la page : un écran
+3. Déploie/héberge `index.html` (ex: GitHub Pages) et ouvre la page : un écran
    te demande un code joueur. Le premier appareil à utiliser un code crée le
    profil, les suivants le rejoignent automatiquement.
 
