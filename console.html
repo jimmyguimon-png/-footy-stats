@@ -118,12 +118,13 @@
       container.innerHTML = joueurs.map(({ code, data }) => {
         const profil = data.profil || { name: code, pos: '-', cat: '-' };
         const stats = calculerStats(data.matchs, data.entrainement);
+        const codeAttr = escapeHtml(code);
         return `
           <div class="bg-[#0D131F] p-4 rounded-2xl border border-gray-800 space-y-2">
             <div class="flex justify-between items-start gap-2">
               <div class="min-w-0">
-                <h2 class="font-black text-white uppercase truncate">${profil.name}</h2>
-                <span class="text-[10px] text-gray-500 uppercase block truncate">${profil.pos} • ${profil.cat} • ${code}</span>
+                <h2 class="font-black text-white uppercase truncate">${escapeHtml(profil.name)}</h2>
+                <span class="text-[10px] text-gray-500 uppercase block truncate">${escapeHtml(profil.pos)} • ${escapeHtml(profil.cat)} • ${codeAttr}</span>
               </div>
               <span class="text-2xl font-black text-amber-400 shrink-0">${stats.ovr}</span>
             </div>
@@ -135,9 +136,33 @@
               <div><span class="block text-[8px] text-gray-500 font-bold">DEF</span><span class="text-xs font-black text-white">${stats.def}</span></div>
               <div><span class="block text-[8px] text-gray-500 font-bold">PHY</span><span class="text-xs font-black text-white">${stats.phy}</span></div>
             </div>
+            <button data-code="${codeAttr}" data-nom="${escapeHtml(profil.name)}" class="btn-supprimer-joueur w-full pt-2 mt-1 border-t border-gray-800/60 text-[10px] text-gray-600 hover:text-red-400 font-bold uppercase tracking-wider transition-colors">
+              🗑️ Supprimer ce joueur
+            </button>
           </div>
         `;
       }).join('');
+
+      container.querySelectorAll('.btn-supprimer-joueur').forEach((btn) => {
+        btn.addEventListener('click', () => supprimerJoueur(btn.dataset.code, btn.dataset.nom));
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str == null ? '' : str).replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[c]);
+    }
+
+    function supprimerJoueur(code, nom) {
+      const confirmation = confirm(
+        `Supprimer définitivement le profil de "${nom}" (code ${code}) ?\n\nToutes ses données (matchs, entraînements, objectifs) seront perdues pour toujours. Cette action est irréversible.`
+      );
+      if (!confirmation) return;
+
+      db.collection('joueurs').doc(code).delete().catch((err) => {
+        alert("Erreur lors de la suppression : " + err.message);
+      });
     }
 
     function demarrerConsole() {
