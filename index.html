@@ -552,10 +552,10 @@
 
       container.innerHTML = troisDerniers.map(e => `
         <div class="flex justify-between items-center bg-gray-900/60 p-2 rounded-lg text-[10px]">
-          <span class="text-gray-300 font-bold">Séance du ${e.date} (${e.duree} min)</span>
+          <span class="text-gray-300 font-bold">Séance du ${escapeHtml(e.date)} (${Number(e.duree) || 0} min)</span>
           <div class="flex items-center gap-2">
-            <span class="text-emerald-400 font-extrabold">+${e.xp} XP</span>
-            <button onclick="supprimerEntrainement(${e.id})" class="text-gray-600 hover:text-red-400 font-bold px-1">✕</button>
+            <span class="text-emerald-400 font-extrabold">+${Number(e.xp) || 0} XP</span>
+            <button onclick="supprimerEntrainement(${Number(e.id) || 0})" class="text-gray-600 hover:text-red-400 font-bold px-1">✕</button>
           </div>
         </div>
       `).join('');
@@ -632,16 +632,22 @@
       container.innerHTML = mesMatchs.map(m => `
         <div class="bg-[#0D131F] p-3 rounded-xl border border-gray-800 flex justify-between items-center text-xs">
           <div>
-            <span class="font-bold text-white">vs ${m.adversaire}</span>
-            <span class="block text-[10px] text-gray-500">${m.date} • ${m.minutes} min</span>
+            <span class="font-bold text-white">vs ${escapeHtml(m.adversaire)}</span>
+            <span class="block text-[10px] text-gray-500">${escapeHtml(m.date)} • ${Number(m.minutes) || 0} min</span>
           </div>
           <div class="flex items-center gap-3">
-            <span class="font-black text-emerald-400">⚽ ${m.buts}</span>
-            <span class="font-black text-cyan-400">🎯 ${m.passes}</span>
-            <button onclick="supprimerMatch(${m.id})" class="text-gray-600 hover:text-red-400 font-bold ml-1">✕</button>
+            <span class="font-black text-emerald-400">⚽ ${Number(m.buts) || 0}</span>
+            <span class="font-black text-cyan-400">🎯 ${Number(m.passes) || 0}</span>
+            <button onclick="supprimerMatch(${Number(m.id) || 0})" class="text-gray-600 hover:text-red-400 font-bold ml-1">✕</button>
           </div>
         </div>
       `).join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str == null ? '' : str).replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[c]);
     }
 
     function exporterCarte() {
