@@ -383,6 +383,7 @@
           objectifs = data.objectifs || objectifs;
           entrainementData = data.entrainement || entrainementData;
         } else {
+          recupererAnciennesDonnees();
           playerDocRef.set({ profil, matchs: mesMatchs, objectifs, entrainement: entrainementData });
         }
 
@@ -401,6 +402,25 @@
     function sauvegarder() {
       if (!playerDocRef) return;
       playerDocRef.set({ profil, matchs: mesMatchs, objectifs, entrainement: entrainementData });
+    }
+
+    // Reprend automatiquement les données de l'ancienne version (stockées en local
+    // sur cet appareil, avant l'ajout de Firebase) lors de la création d'un nouveau
+    // profil, pour éviter à ceux qui utilisaient déjà l'app de tout ressaisir.
+    function recupererAnciennesDonnees() {
+      try {
+        const ancienProfil = JSON.parse(localStorage.getItem('soccl_gold_profil_v10'));
+        const ancienMatchs = JSON.parse(localStorage.getItem('soccl_gold_player_data_v10'));
+        const anciensObjectifs = JSON.parse(localStorage.getItem('soccl_gold_objectifs_v10'));
+        const ancienEntrainement = JSON.parse(localStorage.getItem('soccl_gold_entrainement_v10'));
+
+        if (ancienProfil) profil = ancienProfil;
+        if (ancienMatchs) mesMatchs = ancienMatchs;
+        if (anciensObjectifs) objectifs = anciensObjectifs;
+        if (ancienEntrainement) entrainementData = ancienEntrainement;
+      } catch (e) {
+        // Pas d'anciennes données valides sur cet appareil : on garde les valeurs par défaut.
+      }
     }
 
     if (codeJoueur) {

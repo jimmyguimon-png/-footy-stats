@@ -48,3 +48,13 @@ réel entre tous les appareils connectés avec le même code (via
 `onSnapshot`), et un cache local (persistance Firestore) permet de continuer
 à utiliser l'app hors-ligne — les changements se synchronisent au retour du
 réseau.
+
+### Utilisateurs de l'ancienne version (avant Firebase)
+
+Si quelqu'un utilisait déjà l'app avant l'ajout de Firebase (données stockées
+uniquement dans le navigateur), ses anciennes données sont automatiquement
+reprises la première fois qu'il crée un profil (un nouveau code joueur) —
+mais seulement s'il le fait **depuis le même téléphone/navigateur** qu'avant.
+Depuis un nouvel appareil, il faudra ressaisir les données manuellement (ou
+utiliser l'export/import JSON si une sauvegarde a été faite avec l'ancienne
+version).
