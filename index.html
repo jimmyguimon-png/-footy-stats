@@ -428,11 +428,21 @@
       demarrerSynchronisation();
     }
 
+    // Ne réécrit un champ de saisie que s'il n'est pas en train d'être édité :
+    // sinon, la synchronisation temps réel (déclenchée par notre propre sauvegarde
+    // à chaque frappe) écrase la saisie en cours et bloque l'utilisateur.
+    function setValeurSiPasFocus(id, valeur) {
+      const el = document.getElementById(id);
+      if (document.activeElement !== el) {
+        el.value = valeur;
+      }
+    }
+
     function chargerProfilInitial() {
-      document.getElementById('edit-name').value = profil.name;
-      document.getElementById('edit-pos').value = profil.pos;
-      document.getElementById('edit-cat').value = profil.cat;
-      
+      setValeurSiPasFocus('edit-name', profil.name);
+      setValeurSiPasFocus('edit-pos', profil.pos);
+      setValeurSiPasFocus('edit-cat', profil.cat);
+
       document.getElementById('card-name').innerText = profil.name;
       document.getElementById('card-pos').innerText = profil.pos;
       document.getElementById('card-cat').innerText = `SOCCL • ${profil.cat}`;
@@ -441,9 +451,9 @@
         document.getElementById('player-img').src = profil.photo;
       }
 
-      document.getElementById('target-buts').value = objectifs.buts;
-      document.getElementById('target-passes').value = objectifs.passes;
-      document.getElementById('target-min').value = objectifs.min;
+      setValeurSiPasFocus('target-buts', objectifs.buts);
+      setValeurSiPasFocus('target-passes', objectifs.passes);
+      setValeurSiPasFocus('target-min', objectifs.min);
 
       actualiserJaugeForme();
     }
