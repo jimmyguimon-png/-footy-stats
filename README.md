@@ -76,3 +76,9 @@ pas de vrai compte) : elle évite qu'un visiteur tombe dessus par hasard, mais
 n'empêche pas quelqu'un de déterminé de lire le code dans la page. Pas de lien
 vers cette page depuis l'app elle-même — seules les personnes à qui tu donnes
 l'URL peuvent la trouver.
+
+Chaque carte joueur a un bouton **"🗑️ Supprimer ce joueur"** (avec confirmation)
+pour retirer définitivement un profil — utile en cas de départ, blessure de
+longue durée, etc. La suppression est immédiate et irréversible : toutes les
+données du joueur (matchs, entraînements, objectifs) sont effacées de
+Firestore.
