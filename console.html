@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Console Parent - My Footy Stats</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-[#070A10] text-white font-sans min-h-screen pb-12">
+
+  <!-- ECRAN D'ACCES : CODE PARENT -->
+  <div id="gate-parent" class="fixed inset-0 z-[100] bg-[#070A10] flex flex-col items-center justify-center gap-4 p-6 text-center">
+    <div class="w-14 h-14 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center font-black text-amber-400 text-lg">👨‍👦</div>
+    <h1 class="font-black text-lg tracking-wider bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-500 bg-clip-text text-transparent">
+      CONSOLE PARENT
+    </h1>
+    <p class="text-xs text-gray-400 max-w-xs">
+      Entre le code parent pour voir les stats de tous les joueurs suivis sur l'app.
+    </p>
+    <input type="password" id="input-code-parent" placeholder="Code parent" maxlength="40"
+           class="w-full max-w-xs bg-gray-900 border border-gray-700 rounded-xl p-3 text-sm text-center text-white font-black uppercase tracking-wider focus:outline-none focus:border-amber-400">
+    <button onclick="verifierCodeParent()" class="w-full max-w-xs py-3 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all">
+      Accéder
+    </button>
+    <p id="parent-erreur" class="text-[10px] text-red-400 hidden">Code incorrect.</p>
+  </div>
+
+  <div id="console-content" class="hidden">
+
+    <header class="p-4 border-b border-gray-800 flex justify-between items-center bg-[#0D131F]/90 backdrop-blur-md sticky top-0 z-50">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center font-black text-amber-400 text-xs">FC</div>
+        <h1 class="font-black text-sm tracking-wider bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-500 bg-clip-text text-transparent">
+          CONSOLE PARENT
+        </h1>
+      </div>
+      <a href="index.html" class="text-[10px] text-gray-400 underline hover:text-amber-400">Retour à l'app</a>
+    </header>
+
+    <main class="max-w-2xl mx-auto p-4 space-y-3">
+      <p id="etat-vide" class="text-xs text-gray-500 text-center py-6 hidden">Aucun joueur trouvé pour le moment.</p>
+      <div id="liste-joueurs" class="grid gap-3 sm:grid-cols-2"></div>
+    </main>
+
+  </div>
+
+  <script>
+    // Doit correspondre à la config utilisée dans index.html
+    const firebaseConfig = {
+      apiKey: "AIzaSyDQSmfYF_nI2wQmKsrwWAS9MYO2IjEudeQ",
+      authDomain: "stat-foot-e0642.firebaseapp.com",
+      projectId: "stat-foot-e0642",
+      storageBucket: "stat-foot-e0642.firebasestorage.app",
+      messagingSenderId: "316277898968",
+      appId: "1:316277898968:web:724bea3c912ffd5d5161ad"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Code d'accès à la console. Change cette valeur si tu veux un autre code.
+    const CODE_PARENT = "PAPA-FOOT";
+    const PARENT_KEY = 'soccl_parent_access_v1';
+
+    function verifierCodeParent() {
+      const saisie = document.getElementById('input-code-parent').value.trim().toUpperCase();
+      if (saisie && saisie === CODE_PARENT.toUpperCase()) {
+        localStorage.setItem(PARENT_KEY, '1');
+        demarrerConsole();
+      } else {
+        document.getElementById('parent-erreur').classList.remove('hidden');
+      }
+    }
+
+    // Reproduit les mêmes formules que index.html pour calculer la note globale
+    // et les 6 stats FC à partir des matchs et entraînements d'un joueur.
+    function calculerStats(matchs, entrainement) {
+      matchs = matchs || [];
+      const totalMatchs = matchs.length;
+      const totalButs = matchs.reduce((acc, m) => acc + (m.buts || 0), 0);
+      const totalPasses = matchs.reduce((acc, m) => acc + (m.passes || 0), 0);
+      const xp = (entrainement && entrainement.xp) || 0;
+
+      const pac = Math.min(99, 75 + totalMatchs);
+      const sho = Math.min(99, 70 + (totalButs * 2));
+      const pas = Math.min(99, 68 + (totalPasses * 3));
+      const dri = Math.min(99, 72 + totalButs + totalPasses);
+      const def = 42;
+      const phy = Math.min(99, 70 + Math.floor(totalMatchs / 2) + Math.floor(xp / 100));
+      const ovr = Math.min(99, Math.round((pac + sho + pas + dri + def + phy) / 6) + 12);
+
+      return { pac, sho, pas, dri, def, phy, ovr };
+    }
+
+    function afficherJoueurs(snapshot) {
+      const container = document.getElementById('liste-joueurs');
+      const vide = document.getElementById('etat-vide');
+
+      if (snapshot.empty) {
+        container.innerHTML = '';
+        vide.classList.remove('hidden');
+        return;
+      }
+      vide.classList.add('hidden');
+
+      const joueurs = [];
+      snapshot.forEach((doc) => joueurs.push({ code: doc.id, data: doc.data() }));
+      joueurs.sort((a, b) => {
+        const nomA = (a.data.profil && a.data.profil.name) || a.code;
+        const nomB = (b.data.profil && b.data.profil.name) || b.code;
+        return nomA.localeCompare(nomB);
+      });
+
+      container.innerHTML = joueurs.map(({ code, data }) => {
+        const profil = data.profil || { name: code, pos: '-', cat: '-' };
+        const stats = calculerStats(data.matchs, data.entrainement);
+        return `
+          <div class="bg-[#0D131F] p-4 rounded-2xl border border-gray-800 space-y-2">
+            <div class="flex justify-between items-start gap-2">
+              <div class="min-w-0">
+                <h2 class="font-black text-white uppercase truncate">${profil.name}</h2>
+                <span class="text-[10px] text-gray-500 uppercase block truncate">${profil.pos} • ${profil.cat} • ${code}</span>
+              </div>
+              <span class="text-2xl font-black text-amber-400 shrink-0">${stats.ovr}</span>
+            </div>
+            <div class="grid grid-cols-6 gap-1 text-center pt-2 border-t border-gray-800/60">
+              <div><span class="block text-[8px] text-gray-500 font-bold">PAC</span><span class="text-xs font-black text-white">${stats.pac}</span></div>
+              <div><span class="block text-[8px] text-gray-500 font-bold">SHO</span><span class="text-xs font-black text-white">${stats.sho}</span></div>
+              <div><span class="block text-[8px] text-gray-500 font-bold">PAS</span><span class="text-xs font-black text-white">${stats.pas}</span></div>
+              <div><span class="block text-[8px] text-gray-500 font-bold">DRI</span><span class="text-xs font-black text-white">${stats.dri}</span></div>
+              <div><span class="block text-[8px] text-gray-500 font-bold">DEF</span><span class="text-xs font-black text-white">${stats.def}</span></div>
+              <div><span class="block text-[8px] text-gray-500 font-bold">PHY</span><span class="text-xs font-black text-white">${stats.phy}</span></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function demarrerConsole() {
+      document.getElementById('gate-parent').classList.add('hidden');
+      document.getElementById('console-content').classList.remove('hidden');
+
+      db.collection('joueurs').onSnapshot(afficherJoueurs, (err) => {
+        alert("Erreur de connexion : " + err.message);
+      });
+    }
+
+    if (localStorage.getItem(PARENT_KEY) === '1') {
+      demarrerConsole();
+    }
+  </script>
+</body>
+</html>

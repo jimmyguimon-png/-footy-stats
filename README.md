@@ -58,3 +58,21 @@ mais seulement s'il le fait **depuis le même téléphone/navigateur** qu'avant.
 Depuis un nouvel appareil, il faudra ressaisir les données manuellement (ou
 utiliser l'export/import JSON si une sauvegarde a été faite avec l'ancienne
 version).
+
+## Console Parent
+
+`console.html` affiche, sur une seule page, le profil et la note globale (OVR
++ les 6 stats FC) de **tous** les joueurs enregistrés dans Firestore, mis à
+jour en temps réel. Utile pour un parent qui suit plusieurs enfants/joueurs
+sans avoir à connaître chaque code joueur individuellement.
+
+- URL : `https://jimmyguimon-png.github.io/-footy-stats/console.html`
+- Protégée par un code d'accès distinct des codes joueurs, défini dans la
+  constante `CODE_PARENT` en haut du `<script>` de `console.html` (valeur par
+  défaut : `PAPA-FOOT`, à changer si tu veux).
+
+⚠️ Cette protection est uniquement côté navigateur (comme le reste de l'app,
+pas de vrai compte) : elle évite qu'un visiteur tombe dessus par hasard, mais
+n'empêche pas quelqu'un de déterminé de lire le code dans la page. Pas de lien
+vers cette page depuis l'app elle-même — seules les personnes à qui tu donnes
+l'URL peuvent la trouver.
